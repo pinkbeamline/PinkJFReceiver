@@ -1,3 +1,9 @@
+# Ignore the following folders
+build/
+manual/
+settingsdir/*
+!settingsdir/jungfrau
+
 # Prerequisites
 *.d
 
