@@ -86,13 +86,22 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 	// *** PINK Beamline modifications ***
 
         // Half module size + 48 bytes for header
-        buffersize = 524336;
+        //buffersize = 524336;
+
+        //Quarter module size + 48 bytes for header
+        buffersize = 262192;
 
         // Copy of header to right before the bottom half data
-        memcpy(&buffer[524288], &buffer[0], 48);
+        //memcpy(&buffer[524288], &buffer[0], 48);
+
+        int lpos=524336;
+        for(int jj=0; jj<256; jj++){
+                //memcpy(&buffer[lpos+(jj*2048)], &buffer[48+(jj*1024)], 1024);
+                memcpy(&buffer[48+(jj*1024)], &buffer[lpos+(jj*2048)], 1024);
+        }
 
         // modified starting point in buffer for half a chip
-        if (BinaryFileStatic::WriteDataFile(filefd, &buffer[524288], buffersize, fnum) == buffersize)
+        if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
 		return OK;
 
 	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);

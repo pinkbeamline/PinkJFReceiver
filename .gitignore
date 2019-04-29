@@ -1,4 +1,5 @@
 # Ignore the following folders
+bin/
 build/
 manual/
 settingsdir/*

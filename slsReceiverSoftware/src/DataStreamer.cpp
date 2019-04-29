@@ -263,14 +263,28 @@ void DataStreamer::ProcessAnImage(char* buf) {
 		*/
 
                 // Half module size + 48 bytes for header
-		 int buffersize = 524336;
+		// int buffersize = 524336;
+
+                //Quarter module size + 48 bytes for header
+                int buffersize = 262192;
 
                 // Copy of header to right before the bottom half data
-                memcpy(&buf[524288], &buf[0], 48);
+                //memcpy(&buf[524288], &buf[0], 48);
+
+                // Moving a quarter good chip data to the top of the buffer
+                // first good pixel at (1024*256*2)+(512*2)+48=525360
+                int lpos=524336;
+                for(int jj=0; jj<256; jj++){
+                        memcpy(&buf[48+(jj*1024)], &buf[lpos+(jj*2048)], 1024);
+                }
 
 		// Stream half a chip
-		if (!zmqSocket->SendData(&buf[524288], buffersize))
-			cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",(long long int) fnum, index);
+		//if (!zmqSocket->SendData(&buf[524288], buffersize))
+		//	cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",(long long int) fnum, index);
+
+                // Stream a quarter
+                if (!zmqSocket->SendData(buf, buffersize))
+                        cprintf(RED,"Error: Could not send zmq data for fnum %lld and streamer %d\n",(long long int) fnum, index);
 
 	}
 }
