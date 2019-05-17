@@ -76,36 +76,31 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 		CloseCurrentFile();
 		CreateFile(fnum);
 	}
-	numFramesInFile++;
-	numActualPacketsInFile += nump;
-/*
-	if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
-		return OK;
-*/
 
-	// *** PINK Beamline modifications ***
+	uint32_t *Debug = (uint32_t *)(buffer+40);
+  uint32_t bitflag = *Debug & 0x40000;
 
-        // Half module size + 48 bytes for header
-        //buffersize = 524336;
+	if(bitflag){
+		numFramesInFile++;
+		numActualPacketsInFile += nump;
 
-        //Quarter module size + 48 bytes for header
-        buffersize = 262192;
+	  // *** PINK Beamline modifications ***
 
-        // Copy of header to right before the bottom half data
-        //memcpy(&buffer[524288], &buffer[0], 48);
+    //Quarter module size + 48 bytes for header
+		buffersize = 262192;
 
-        int lpos=524336;
-        for(int jj=0; jj<256; jj++){
-                //memcpy(&buffer[lpos+(jj*2048)], &buffer[48+(jj*1024)], 1024);
-                memcpy(&buffer[48+(jj*1024)], &buffer[lpos+(jj*2048)], 1024);
-        }
+    int lpos=524336;
+    for(int jj=0; jj<256; jj++){
+      memcpy(&buffer[48+(jj*1024)], &buffer[lpos+(jj*2048)], 1024);
+  	}
 
-        // modified starting point in buffer for half a chip
-        if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
-		return OK;
+    if (BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize, fnum) == buffersize)
+		  return OK;
 
-	cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
-	return FAIL;
+		cprintf(RED,"%d Error: Write to file failed for image number %lld\n", index, (long long int)fnum);
+		return FAIL;
+	}
+	return OK;
 }
 
 
@@ -126,5 +121,3 @@ int BinaryFile::CreateMasterFile(bool en, uint32_t size,
 	}
 	return OK;
 }
-
-
